@@ -5,7 +5,19 @@
     <h1>Charlie's Blogging Service</h1>
     {% if user %}
       <h2>Welcome, {{ user.nickname() }}!</h2>
-      <p>Your blogs: (add list)
+      <p>Select one of your blogs to add/edit a post:
+      <form action="/selectblog" method="post">
+        {% for blog in user_blogs %}
+          <input type=radio name="blog" value="{{ blog.name }}">
+          {{ blog.name }}<br>
+        {% endfor %}
+        <input type="submit" value="Select">
+      </form>
+      <form action="/createblog" method="post">
+        Or create a new blog:
+        <input type="text" name="new_blog_name" value="new blog name">
+        <input type="submit" value="Create Blog">
+      </form>
     {% else %}
       <p>Please login to create blogs and/or blog posts
     {% endif %}

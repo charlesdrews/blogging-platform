@@ -14,6 +14,23 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
+class Blog(ndb.Model):
+    """Models a blog with name and author"""
+    name = ndb.StringProperty(indexed=False)
+    author = ndb.UserProperty()
+
+
+class BlogPost(ndb.Model):
+    """Models a blog post belonging to a blog
+       and having an author, title, body, and date
+    """
+    blog = ndb.StringProperty(indexed=False)
+    author = ndb.UserProperty()
+    title = ndb.StringProperty(indexed=False)
+    body = ndb.StringProperty(indexed=False)
+    date = ndb.DateTimeProperty(auto_now_add=True)
+
+
 class MainPage(webapp2.RequestHandler):
     
     def get(self):
@@ -25,9 +42,12 @@ class MainPage(webapp2.RequestHandler):
         else:
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
+        
+        user_blogs = Blog.query(Blog.author == user)
 
         template_values = {
             'user': user,
+            'user_blogs': user_blogs,
             'url': url,
             'url_linktext': url_linktext
         }
