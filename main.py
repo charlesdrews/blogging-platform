@@ -55,6 +55,20 @@ class MainPage(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('index.html')
         self.response.write(template.render(template_values))
 
+
+class CreateBlog(webapp2.RequestHandler):
+    
+    def post(self):
+        if users.get_current_user():
+            blog = Blog()
+            blog.name = self.request.get('new_blog_name')
+            blog.author = users.get_current_user()
+            blog.put()
+        
+        return self.redirect('/') #update this later to go to new blog
+
+
 application = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/createblog', CreateBlog),
 ], debug=True)

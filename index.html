@@ -13,9 +13,9 @@
         {% endfor %}
         <input type="submit" value="Select">
       </form>
-      <form action="/createblog" method="post">
-        Or create a new blog:
-        <input type="text" name="new_blog_name" value="new blog name">
+      <p><form action="/createblog" method="post">
+        Or create a new blog (type new name here):
+        <input type="text" name="new_blog_name">
         <input type="submit" value="Create Blog">
       </form>
     {% else %}
