@@ -1,5 +1,6 @@
 import os
 import urllib
+import datetime
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
@@ -32,8 +33,10 @@ class BlogPost(ndb.Model):
     author = ndb.UserProperty()
     title = ndb.StringProperty(indexed=False)
     body = ndb.StringProperty(indexed=False)
+    # auto_now_add means only when object first created
     create_date = ndb.DateTimeProperty(auto_now_add=True)
-    edit_date = ndb.DateTimeProperty(auto_now_add=True)
+    # auto_now means everytime an object is updated
+    edit_date = ndb.DateTimeProperty(auto_now=True)
 
 
 class MainPage(webapp2.RequestHandler):
@@ -48,8 +51,8 @@ class MainPage(webapp2.RequestHandler):
             login_url = users.create_login_url(self.request.uri)
             login_text = 'Login'
         
-        user_blogs = Blog.query(Blog.author == user) #.order(Blog.name)
-        all_blogs = Blog.query().order(Blog.name)
+        user_blogs = Blog.query(Blog.author == user).order(Blog.name)
+        all_blogs = Blog.query().order(Blog.name).order(Blog.name)
         
         template_values = {
             'user': user,
@@ -71,7 +74,7 @@ class CreateBlog(webapp2.RequestHandler):
             blog.name = self.request.get('new_blog_name')
             blog.author = users.get_current_user()
             blog.put()
-            #self.redirect('/editblog')
+            self.redirect('/')
         else:
             self.redirect('/')
 
@@ -105,7 +108,6 @@ class EditBlog(webapp2.RequestHandler):
 
             template = JINJA_ENVIRONMENT.get_template('edit.html')
             self.response.write(template.render(template_values))
-            #self.redirect('/editblog')
         else:
             # if user is not blog's author, show standard blog view.
             # worth checking, because someone could get the blog's
@@ -116,7 +118,6 @@ class EditBlog(webapp2.RequestHandler):
 
     def get(self):
         self.post()
-            #self.redirect('/')
 
 
 class CreatePost(webapp2.RequestHandler):
@@ -186,6 +187,50 @@ class ShowPost(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 
+class EditPost(webapp2.RequestHandler):
+
+    def get(self):
+        # create the edit-post page
+        post_url_key = self.request.get('post_url_key')
+        post_key = ndb.Key(urlsafe=post_url_key)
+        post = post_key.get()
+        
+        if users.get_current_user() == post.author:
+            # if user is post's author, show edit-post page
+            blog = post.key.parent().get()
+            
+            template_values = {
+                'user': users.get_current_user(),
+                'blog': blog,
+                'post': post
+            }
+
+            template = JINJA_ENVIRONMENT.get_template('editpost.html')
+            self.response.write(template.render(template_values))
+        else:
+            # if user is not post's author, redirect to standard blog view
+            self.redirect('/blog?blog_url_key='+blog_url_key)
+
+    def post(self):
+        # process the actual edit
+        post_url_key = self.request.get('post_url_key')
+        post_key = ndb.Key(urlsafe=post_url_key)
+        blog_post = post_key.get()
+        
+        if users.get_current_user() == blog_post.author:
+            # if user is post's author, continue processing the edit
+            blog_post.title = self.request.get('new_title')
+            blog_post.body = self.request.get('new_body')
+            blog_post.put()
+
+            blog = blog_post.key.parent().get()
+            blog_url_key = blog.key.urlsafe()
+            self.redirect('/editblog?blog_url_key='+blog_url_key)
+        else:
+            # if user is not post's author, redirect to standard blog view
+            self.redirect('/blog?blog_url_key='+blog_url_key)
+
+
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createblog', CreateBlog),
@@ -193,4 +238,5 @@ application = webapp2.WSGIApplication([
     ('/createpost', CreatePost),
     ('/blog', ShowBlog),
     ('/post', ShowPost),
+    ('/editpost', EditPost),
 ], debug=True)

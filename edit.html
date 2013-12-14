@@ -38,9 +38,11 @@
           <h3>By: {{ post.author }}</h3>
           <p>Posted: {{ post.create_date }}<br>Edited: {{ post.edit_date }}
           <p>{{ post.body }}
-          <p><a href="/post?post_url_key={{ post.key.urlsafe() }}">View full post</a>
+          <p><a href="/post?post_url_key={{ post.key.urlsafe() }}">view full post</a>
+          <p><a href="/editpost?post_url_key={{ post.key.urlsafe() }}">edit post</a>
           <hr>
         {% endfor %}
+        
         <p><a href="/">Return to Charlie's Blogging Service homepage</a> 
       </td>
       <td class="taglist">

@@ -12,19 +12,17 @@
     {% if user %}
       <h2>Welcome, {{ user.nickname() }}!</h2>
       <p>Select one of your blogs to add or edit a post:
-    
-      <form action="/editblog" method="post">
-        {% for blog in user_blogs %}
-          <input type=radio name="blog_url_key" value="{{ blog.key.urlsafe() }}">
-          {{ blog.name }}<br>
-        {% endfor %}
-        <input type="submit" value="Select">
-      </form>
-    
+      <ul> 
+      {% for blog in user_blogs %}
+        <li><a href="/editblog?blog_url_key={{ blog.key.urlsafe() }}">{{ blog.name }}</a> 
+      {% endfor %}
+      </ul>
+
       <p><form action="/createblog" method="post">
         Or create a new blog (type new name here):
         <input type="text" name="new_blog_name">
         <input type="submit" value="Create Blog">
+        <br>Please hit refresh if new blog doesn't appear immediately.
       </form>
   
     {% else %}
