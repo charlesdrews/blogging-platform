@@ -4,6 +4,7 @@ import time
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
+from google.appengine.datastore.datastore_query import Cursor
 
 import jinja2
 import webapp2
@@ -92,14 +93,24 @@ class ViewBlog(webapp2.RequestHandler):
         blog_key = ndb.Key(urlsafe=blog_url_key)
         blog = blog_key.get()
         selectedtag = self.request.get('tag')
-        
+        curs = Cursor(urlsafe=self.request.get('cursor'))
+
         if selectedtag:
-            blog_posts = BlogPost.query(
+            #blog_posts = BlogPost.query(
+            #    BlogPost.tags == selectedtag,
+            #    ancestor=blog_key).order(-BlogPost.create_date)
+            blog_posts, next_curs, more = BlogPost.query(
                 BlogPost.tags == selectedtag,
-                ancestor=blog_key).order(-BlogPost.create_date)
+                ancestor=blog_key).order(
+                -BlogPost.create_date).fetch_page(10,
+                start_cursor=curs)
         else:
-            blog_posts = BlogPost.query(
-                ancestor=blog_key).order(-BlogPost.create_date)
+            #blog_posts = BlogPost.query(
+            #    ancestor=blog_key).order(-BlogPost.create_date)
+            blog_posts, next_curs, more = BlogPost.query(
+                ancestor=blog_key).order(
+                -BlogPost.create_date).fetch_page(10,
+                start_cursor=curs)
         
         for blog_post in blog_posts:
             blog_post.body = blog_post.body[0:500]
@@ -114,12 +125,16 @@ class ViewBlog(webapp2.RequestHandler):
         template_values = {
             'user': users.get_current_user(),
             'blog': blog,
-            'blog_posts': blog_posts,
             'selectedtag': selectedtag,
+            'blog_posts': blog_posts,
+            'more': more,
             'login_url': login_url,
             'login_text': login_text,
         }
-       
+        
+        if next_curs:
+            template_values['cursor'] = next_curs.urlsafe()
+           
         template = JINJA_ENVIRONMENT.get_template('blog.html')
         self.response.write(template.render(template_values))
         

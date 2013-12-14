@@ -73,6 +73,14 @@
           <hr>
         {% endfor %}
         
+        {# more comes from ndb's fetch_page and indicates whether
+           there are more results to show
+        #}
+        {% if more %}
+          <p><a href="/blog?cursor={{ cursor }}&tag={{ selectedtag}}&blog_url_key={{ blog.key.urlsafe() }}">
+                more posts</a>
+        {% endif %} 
+         
         {% if selectedtag %}
           <p><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
                 Return to blog view (including all tags)</a>
