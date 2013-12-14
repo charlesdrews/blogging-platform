@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <body>
+    <h1>{{ blog_name }}</h1>
+    
+    {% for post in blog_posts %}
+      <hr>
+      <h2>{{ post.title }}</h2>
+      <h3>{{ post.author }}</h3>
+      {{ post.create_date }}
+      <p>{{ post.body }}
+    {% endfor %}
+
+  </body>
+</html>
+{% endautoescape %}

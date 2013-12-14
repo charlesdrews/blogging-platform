@@ -10,7 +10,7 @@
       
       <form action="/editblog" method="post">
         {% for blog in user_blogs %}
-          <input type=radio name="blog_key" value="{{ blog.key.urlsafe() }}">
+          <input type=radio name="blog_url_key" value="{{ blog.key.urlsafe() }}">
           {{ blog.name }}<br>
         {% endfor %}
         <input type="submit" value="Select">
@@ -28,7 +28,12 @@
     
     <p><a href="{{ url|safe }}">{{ url_linktext }}</a>
     
-    <p>Blogs to view: (add list)
+    <p>Or select a blog to view:<ul>
+    {% for blog in all_blogs %}
+      <li><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">{{ blog.name }}</a> 
+      (author: {{ blog.author }})
+    {% endfor %}
+    </ul>
   </body>
 </html>
 {% endautoescape %}

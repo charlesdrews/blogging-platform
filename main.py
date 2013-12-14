@@ -42,10 +42,12 @@ class MainPage(webapp2.RequestHandler):
             url_linktext = 'Login'
         
         user_blogs = Blog.query(Blog.author == user)
-
+        all_blogs = Blog.query()
+        
         template_values = {
             'user': user,
             'user_blogs': user_blogs,
+            'all_blogs': all_blogs,
             'url': url,
             'url_linktext': url_linktext
         }
@@ -74,9 +76,10 @@ class EditBlog(webapp2.RequestHandler):
     
     def post(self):
         if users.get_current_user():
-            blog_key = self.request.get('blog_key')
-            blog = ndb.Key(urlsafe=blog_key).get()
-            blog_posts = BlogPost.query(ancestor=ndb.Key(urlsafe=blog_key))
+            blog_url_key = self.request.get('blog_url_key')
+            blog_key = ndb.Key(urlsafe=blog_url_key)
+            blog = blog_key.get()
+            blog_posts = BlogPost.query(ancestor=blog_key)
             url = users.create_logout_url(self.request.uri)
             url_linktext = 'Logout'
             
@@ -101,14 +104,15 @@ class CreatePost(webapp2.RequestHandler):
     
     def post(self):
         if users.get_current_user():
-            blog_key = self.request.get('blog_key')
-            blog = ndb.Key(urlsafe=blog_key).get()
+            blog_url_key = self.request.get('blog_url_key')
+            blog_key = ndb.Key(urlsafe=blog_url_key)
+            blog = blog_key.get()
 
-            bp = BlogPost(parent=ndb.Key(urlsafe=blog_key))
-            bp.author = users.get_current_user()
-            bp.title = self.request.get('title')
-            bp.body = self.request.get('body')
-            bp.put()
+            blog_post = BlogPost(parent=blog_key)
+            blog_post.author = users.get_current_user()
+            blog_post.title = self.request.get('title')
+            blog_post.body = self.request.get('body')
+            blog_post.put()
         else:
             self.redirect('/')
 
@@ -116,9 +120,27 @@ class CreatePost(webapp2.RequestHandler):
             self.redirect('/')
 
 
+class ShowBlog(webapp2.RequestHandler):
+
+    def get(self):
+        blog_url_key = self.request.get('blog_url_key')
+        blog_key = ndb.Key(urlsafe=blog_url_key)
+        blog = blog_key.get()
+        blog_posts = BlogPost.query(ancestor=blog_key).order(-BlogPost.create_date)
+
+        template_values = {
+            'blog_name': blog.name,
+            'blog_posts': blog_posts
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('blog.html')
+        self.response.write(template.render(template_values))
+
+
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createblog', CreateBlog),
     ('/editblog', EditBlog),
     ('/createpost', CreatePost),
+    ('/blog', ShowBlog),
 ], debug=True)

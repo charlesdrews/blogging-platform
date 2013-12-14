@@ -10,7 +10,7 @@
          blog "{{ blog.name }}":
       
       <form action="/createpost" method="post">
-        <input type=hidden name="blog_key" value="{{ blog.key.urlsafe() }}">
+        <input type=hidden name="blog_url_key" value="{{ blog.key.urlsafe() }}">
         <input type=hidden name="author" value="{{ user }}">
         <br>Post Title:<br>
         <textarea name="title" rows="2" cols="60"></textarea>
