@@ -13,5 +13,9 @@ td {
 
 td.taglist {
   text-align: right;
-  padding-left: 25px;
+  padding-left: 40px;
+}
+
+textarea {
+  width: 680px;
 }
