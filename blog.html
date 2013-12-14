@@ -16,11 +16,13 @@
       <td>
         {% for post in blog_posts %}
           <h2>{{ post.title }}</h2>
-          <h3>{{ post.author }}</h3>
-          <hr>
-          {{ post.create_date }}
+          <h3>By: {{ post.author }}</h3>
+          <p>Posted: {{ post.create_date }}<br>Edited: {{ post.edit_date }}
           <p>{{ post.body }}
+          <p><a href="/post?post_url_key={{ post.key.urlsafe() }}">View full post</a>
+          <hr>
         {% endfor %}
+        <p><a href="/">Return to Charlie's Blogging Service homepage</a> 
       </td>
       <td class="taglist">
         <br>Tags:<br><br>

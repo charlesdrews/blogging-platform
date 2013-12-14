@@ -147,10 +147,28 @@ class ShowBlog(webapp2.RequestHandler):
         self.response.write(template.render(template_values))
 
 
+class ShowPost(webapp2.RequestHandler):
+
+    def get(self):
+        post_url_key = self.request.get('post_url_key')
+        post_key = ndb.Key(urlsafe=post_url_key)
+        post = post_key.get()
+        blog = post.key.parent().get()
+
+        template_values = {
+            'blog': blog,
+            'post': post
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('post.html')
+        self.response.write(template.render(template_values))
+
+
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createblog', CreateBlog),
     ('/editblog', EditBlog),
     ('/createpost', CreatePost),
     ('/blog', ShowBlog),
+    ('/post', ShowPost),
 ], debug=True)
