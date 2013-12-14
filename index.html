@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 {% autoescape true %}
 <html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
   <body>
-    <h1>Charlie's Blogging Service</h1>
-    
+  <table>
+    <tr><td>
+    <h1>Charlie's Blogging Service</h1><br>
+
     {% if user %}
       <h2>Welcome, {{ user.nickname() }}!</h2>
-      <p>Select one of your blogs to add/edit a post:
-      
+      <p>Select one of your blogs to add or edit a post:
+    
       <form action="/editblog" method="post">
         {% for blog in user_blogs %}
           <input type=radio name="blog_url_key" value="{{ blog.key.urlsafe() }}">
@@ -15,25 +20,29 @@
         {% endfor %}
         <input type="submit" value="Select">
       </form>
-      
+    
       <p><form action="/createblog" method="post">
         Or create a new blog (type new name here):
         <input type="text" name="new_blog_name">
         <input type="submit" value="Create Blog">
       </form>
-    
+  
     {% else %}
       <p>Please login to create blogs and/or blog posts
     {% endif %}
-    
-    <p><a href="{{ url|safe }}">{{ url_linktext }}</a>
-    
+  
+    <p><a href="{{ login_url|safe }}">{{ login_text }}</a>
+  
+    <hr>
     <p>Or select a blog to view:<ul>
     {% for blog in all_blogs %}
       <li><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">{{ blog.name }}</a> 
       (author: {{ blog.author }})
     {% endfor %}
     </ul>
+    
+    </td></tr>
+  </table>
   </body>
 </html>
 {% endautoescape %}

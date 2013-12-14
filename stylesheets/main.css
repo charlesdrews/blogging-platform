@@ -1,0 +1,17 @@
+body {
+  font-family: Helvetica, sans-serif;
+}
+
+table {
+  width: 700px;
+  margin: auto;
+}
+
+td {
+  vertical-align: top;
+}
+
+td.taglist {
+  text-align: right;
+  padding-left: 50px;
+}

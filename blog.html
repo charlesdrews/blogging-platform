@@ -1,17 +1,36 @@
 <!DOCTYPE html>
 {% autoescape true %}
 <html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
   <body>
-    <h1>{{ blog_name }}</h1>
-    
-    {% for post in blog_posts %}
-      <hr>
-      <h2>{{ post.title }}</h2>
-      <h3>{{ post.author }}</h3>
-      {{ post.create_date }}
-      <p>{{ post.body }}
-    {% endfor %}
-
+  <table>
+    <tr>
+      <td colspan="2">
+        <h1>{{ blog_name }}</h1>
+        <hr>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        {% for post in blog_posts %}
+          <h2>{{ post.title }}</h2>
+          <h3>{{ post.author }}</h3>
+          <hr>
+          {{ post.create_date }}
+          <p>{{ post.body }}
+        {% endfor %}
+      </td>
+      <td class="taglist">
+        <br>Tags:<br><br>
+        list<br>
+        will<br>
+        go<br>
+        here<br>
+      </td>
+    </tr>
+  </table>
   </body>
 </html>
 {% endautoescape %}

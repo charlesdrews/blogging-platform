@@ -42,11 +42,11 @@ class MainPage(webapp2.RequestHandler):
         user = users.get_current_user()
 
         if user:
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
+            login_url = users.create_logout_url(self.request.uri)
+            login_text = 'Logout'
         else:
-            url = users.create_login_url(self.request.uri)
-            url_linktext = 'Login'
+            login_url = users.create_login_url(self.request.uri)
+            login_text = 'Login'
         
         user_blogs = Blog.query(Blog.author == user) #.order(Blog.name)
         all_blogs = Blog.query().order(Blog.name)
@@ -55,8 +55,8 @@ class MainPage(webapp2.RequestHandler):
             'user': user,
             'user_blogs': user_blogs,
             'all_blogs': all_blogs,
-            'url': url,
-            'url_linktext': url_linktext
+            'login_url': login_url,
+            'login_text': login_text
         }
         
         template = JINJA_ENVIRONMENT.get_template('index.html')
@@ -87,15 +87,15 @@ class EditBlog(webapp2.RequestHandler):
             blog_key = ndb.Key(urlsafe=blog_url_key)
             blog = blog_key.get()
             blog_posts = BlogPost.query(ancestor=blog_key)
-            url = users.create_logout_url(self.request.uri)
-            url_linktext = 'Logout'
+            login_url = users.create_logout_url(self.request.uri)
+            login_text = 'Logout'
             
             template_values = {
                 'user': users.get_current_user(),
                 'blog': blog,
                 'blog_posts': blog_posts,
-                'url': url,
-                'url_linktext': url_linktext
+                'login_url': login_url,
+                'login_text': login_text
             }
 
             template = JINJA_ENVIRONMENT.get_template('edit.html')
