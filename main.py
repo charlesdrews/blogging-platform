@@ -1,6 +1,6 @@
 import os
 import urllib
-import datetime
+import time
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
@@ -48,11 +48,11 @@ class MainPage(webapp2.RequestHandler):
         if user:
             login_url = users.create_logout_url(self.request.uri)
             login_text = 'Logout'
-            user_blogs = Blog.query(Blog.author == user).order(Blog.name)
         else:
             login_url = users.create_login_url(self.request.uri)
             login_text = 'Login'
         
+        user_blogs = Blog.query(Blog.author == user).order(Blog.name)
         all_blogs = Blog.query().order(Blog.name).order(Blog.name)
         
         template_values = {
@@ -75,12 +75,14 @@ class CreateBlog(webapp2.RequestHandler):
             blog.name = self.request.get('new_blog_name')
             blog.author = users.get_current_user()
             blog.put()
+            time.sleep(1)
             self.redirect('/')
         else:
             self.redirect('/')
 
     def get(self):
-            self.redirect('/')
+        # if a user tries to create a post via url, redirect home
+        self.redirect('/')
 
 
 class ViewBlog(webapp2.RequestHandler):
@@ -118,52 +120,9 @@ class ViewBlog(webapp2.RequestHandler):
             'login_text': login_text,
         }
        
-        #if users.get_current_user() == blog.author:
-        #    template_values['user'] = user
-        #    template_values['userisauthor'] = 'True'
-        
         template = JINJA_ENVIRONMENT.get_template('blog.html')
         self.response.write(template.render(template_values))
         
-"""
-class EditBlog(webapp2.RequestHandler):
-    
-    def post(self):
-        blog_url_key = self.request.get('blog_url_key')
-        blog_key = ndb.Key(urlsafe=blog_url_key)
-        blog = blog_key.get()
-        
-        if users.get_current_user() == blog.author:
-            # if user is blog's author, show edit-blog page
-            blog_posts = BlogPost.query(
-                ancestor=blog_key).order(-BlogPost.create_date)
-            login_url = users.create_logout_url(self.request.uri)
-            login_text = 'Logout'
-            
-            for blog_post in blog_posts:
-                blog_post.body = blog_post.body[0:500]
-            
-            template_values = {
-                'user': users.get_current_user(),
-                'blog': blog,
-                'blog_posts': blog_posts,
-                'login_url': login_url,
-                'login_text': login_text
-            }
-
-            template = JINJA_ENVIRONMENT.get_template('edit.html')
-            self.response.write(template.render(template_values))
-        else:
-            # if user is not blog's author, show standard blog view.
-            # worth checking, because someone could get the blog's
-            # key from the url of the standard blog view, then try
-            # to enter "/editblog?blog_url_key=key" as a url in an
-            # attempt to edit someone else's blog
-            self.redirect('/blog?blog_url_key='+blog_url_key)
-
-    def get(self):
-        self.post()
-"""
 
 class CreatePost(webapp2.RequestHandler):
     
@@ -182,43 +141,18 @@ class CreatePost(webapp2.RequestHandler):
             taglist.extend(self.request.get('tags').split(','))
             blog_post.tags = taglist
             blog_post.put()
+            # when done, redirect to blog view
             self.redirect('/blog?blog_url_key='+blog_url_key)
         else:
-            # if user is not blog's author, redirect to standard blog view
+            # if user is not blog's author, redirect w/o creating post
             self.redirect('/blog?blog_url_key='+blog_url_key)
 
     def get(self):
+            # if a user tries to create a post via url, redirect home
             self.redirect('/')
 
-"""
-class ShowBlog(webapp2.RequestHandler):
 
-    def get(self):
-        blog_url_key = self.request.get('blog_url_key')
-        blog_key = ndb.Key(urlsafe=blog_url_key)
-        blog = blog_key.get()
-        
-        if users.get_current_user() == blog.author:
-            # if user is blog's author, show edit-blog page
-            self.redirect('/editblog?blog_url_key='+blog_url_key)
-        else:
-            # if user is not blog's author, show standard blog view
-            blog_posts = BlogPost.query(
-                ancestor=blog_key).order(-BlogPost.create_date)
-            
-            for blog_post in blog_posts:
-                blog_post.body = blog_post.body[0:500]
-             
-            template_values = {
-                'blog': blog,
-                'blog_posts': blog_posts
-            }
-            
-            template = JINJA_ENVIRONMENT.get_template('blog.html')
-            self.response.write(template.render(template_values))
-"""
-
-class ShowPost(webapp2.RequestHandler):
+class ViewPost(webapp2.RequestHandler):
 
     def get(self):
         post_url_key = self.request.get('post_url_key')
@@ -281,38 +215,12 @@ class EditPost(webapp2.RequestHandler):
             # if user is not post's author, redirect to standard blog view
             self.redirect('/blog?blog_url_key='+blog_url_key)
 
-"""
-class ShowTag(webapp2.RequestHandler):
-    
-    def get(self):
-        blog_url_key = self.request.get('blog_url_key')
-        blog_key = ndb.Key(urlsafe=blog_url_key)
-        tag = self.request.get('tag')
-
-        blog_posts = BlogPost.query(
-            BlogPost.tags == tag,
-            ancestor=blog_key).order(-BlogPost.create_date)
-    
-        for blog_post in blog_posts:
-            blog_post.body = blog_post.body[0:500]
-         
-        template_values = {
-            'blog': blog_key.get(),
-            'blog_posts': blog_posts,
-            'selectedtag': tag
-        }
-        
-        template = JINJA_ENVIRONMENT.get_template('blog.html')
-        self.response.write(template.render(template_values))
-"""
 
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createblog', CreateBlog),
-    ('/createpost', CreatePost),
     ('/blog', ViewBlog),
-    ('/post', ShowPost),
+    ('/createpost', CreatePost),
+    ('/post', ViewPost),
     ('/editpost', EditPost),
 ], debug=True)
-    #('/editblog', ViewBlog),
-    #('/tag', ShowTag),
