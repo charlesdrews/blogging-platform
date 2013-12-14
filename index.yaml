@@ -25,3 +25,10 @@ indexes:
   properties:
   - name: create_date
     direction: desc
+
+- kind: BlogPost
+  ancestor: yes
+  properties:
+  - name: tags
+  - name: create_date
+    direction: desc

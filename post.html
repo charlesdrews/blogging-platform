@@ -14,9 +14,16 @@
         
         <h2>{{ post.title }}</h2>
         <h3>By: {{ post.author }}</h3>
-        <p>Posted: {{ post.create_date }}<br>Edited: {{ post.edit_date }}
+        
+        <p>Posted: {{ post.create_date.strftime('%Y-%m-%d %H:%M:%S') }}
+        <br>Edited: {{ post.edit_date.strftime('%Y-%m-%d %H:%M:%S') }}
+        
         <p>{{ post.body }}
         
+        <p>Tags: 
+        {% for tag in post.tags %}
+          <a href="">{{ tag }}</a>{% if not loop.last %},{% endif %}
+        {% endfor %} 
         <hr>
         
         <p><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">Return to blog view</a> 

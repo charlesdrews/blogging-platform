@@ -18,12 +18,17 @@
         <form action="/createpost" method="post">
           <input type=hidden name="blog_url_key" value="{{ blog.key.urlsafe() }}">
           <input type=hidden name="author" value="{{ user }}">
-          <br>Post Title:<br>
+          
+          <p>Post Title:<br>
           <textarea name="title" rows="2"></textarea>
-          <br>Post Body:<br>
+          
+          <p>Post Body:<br>
           <textarea name="body" rows="10"></textarea>
-          <br>
-          <input type="submit" value="Create Post">
+         
+          <p>Tags (separated by commas):<br>
+          <textarea name="tags" rows="2"></textarea>
+           
+          <p><input type="submit" value="Create Post">
         </form>
     
         <hr>
@@ -36,9 +41,19 @@
         {% for post in blog_posts %}
           <h2>{{ post.title }}</h2>
           <h3>By: {{ post.author }}</h3>
-          <p>Posted: {{ post.create_date }}<br>Edited: {{ post.edit_date }}
+          
+          <p>Posted: {{ post.create_date.strftime('%Y-%m-%d %H:%M:%S') }}
+          <br>Edited: {{ post.edit_date.strftime('%Y-%m-%d %H:%M:%S') }}
+          
           <p>{{ post.body }}
+          
+          <p>Tags: 
+          {% for tag in post.tags %}
+            <a href="">{{ tag }}</a>{% if not loop.last %},{% endif %}
+          {% endfor %} 
+          
           <p><a href="/post?post_url_key={{ post.key.urlsafe() }}">view full post</a>
+          
           <p><a href="/editpost?post_url_key={{ post.key.urlsafe() }}">edit post</a>
           <hr>
         {% endfor %}
