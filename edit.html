@@ -3,14 +3,19 @@
 <html>
   <body>
     <h1>Charlie's Blogging Service</h1>
+    
     {% if user %}
       <h2>Welcome, {{ user.nickname() }}!</h2>
-      <p>Please use this form to create a new post for your blog {{ blog.name }}:
+      <p>Please use this form to create a new post for your
+         blog "{{ blog.name }}":
       <br>(add form here)
+    
     {% else %}
       <p>Please login to create blogs and/or blog posts
     {% endif %}
+    
     <p><a href="{{ url|safe }}">{{ url_linktext }}</a>
+    
     <p>Blogs to view: (add list)
   </body>
 </html>

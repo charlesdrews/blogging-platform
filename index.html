@@ -3,25 +3,31 @@
 <html>
   <body>
     <h1>Charlie's Blogging Service</h1>
+    
     {% if user %}
       <h2>Welcome, {{ user.nickname() }}!</h2>
       <p>Select one of your blogs to add/edit a post:
-      <form action="/selectblog" method="post">
+      
+      <form action="/editblog" method="post">
         {% for blog in user_blogs %}
           <input type=radio name="blog_key" value="{{ blog.key.urlsafe() }}">
           {{ blog.name }}<br>
         {% endfor %}
         <input type="submit" value="Select">
       </form>
+      
       <p><form action="/createblog" method="post">
         Or create a new blog (type new name here):
         <input type="text" name="new_blog_name">
         <input type="submit" value="Create Blog">
       </form>
+    
     {% else %}
       <p>Please login to create blogs and/or blog posts
     {% endif %}
+    
     <p><a href="{{ url|safe }}">{{ url_linktext }}</a>
+    
     <p>Blogs to view: (add list)
   </body>
 </html>

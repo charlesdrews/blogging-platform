@@ -63,12 +63,15 @@ class CreateBlog(webapp2.RequestHandler):
             blog.name = self.request.get('new_blog_name')
             blog.author = users.get_current_user()
             blog.put()
-            return self.redirect('/selectblog')
+            self.redirect('/editblog')
         else:
-            return self.redirect('/')
+            self.redirect('/')
+
+    def get(self):
+            self.redirect('/')
 
 
-class SelectBlog(webapp2.RequestHandler):
+class EditBlog(webapp2.RequestHandler):
     
     def post(self):
         if users.get_current_user():
@@ -89,7 +92,10 @@ class SelectBlog(webapp2.RequestHandler):
             template = JINJA_ENVIRONMENT.get_template('edit.html')
             self.response.write(template.render(template_values))
         else:
-            return self.redirect('/')
+            self.redirect('/')
+
+    def get(self):
+            self.redirect('/')
 
 
 class CreatePost(webapp2.RequestHandler):
@@ -102,6 +108,6 @@ class CreatePost(webapp2.RequestHandler):
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createblog', CreateBlog),
-    ('/selectblog', SelectBlog),
+    ('/editblog', EditBlog),
     ('/createpost', CreatePost),
 ], debug=True)
