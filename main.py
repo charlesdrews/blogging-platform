@@ -24,7 +24,6 @@ class BlogPost(ndb.Model):
     """Models a blog post belonging to a blog
        and having an author, title, body, and date
     """
-    blog = ndb.StringProperty(indexed=False)
     author = ndb.UserProperty()
     title = ndb.StringProperty(indexed=False)
     body = ndb.StringProperty(indexed=False)
@@ -64,11 +63,45 @@ class CreateBlog(webapp2.RequestHandler):
             blog.name = self.request.get('new_blog_name')
             blog.author = users.get_current_user()
             blog.put()
-        
-        return self.redirect('/') #update this later to go to new blog
+            return self.redirect('/selectblog')
+        else:
+            return self.redirect('/')
+
+
+class SelectBlog(webapp2.RequestHandler):
+    
+    def post(self):
+        if users.get_current_user():
+            blog_key = self.request.get('blog_key')
+            blog = ndb.Key(urlsafe=blog_key).get()
+            blog_posts = BlogPost.query(ancestor=ndb.Key(urlsafe=blog_key))
+            url = users.create_logout_url(self.request.uri)
+            url_linktext = 'Logout'
+            
+            template_values = {
+                'user': users.get_current_user(),
+                'blog': blog,
+                'blog_posts': blog_posts,
+                'url': url,
+                'url_linktext': url_linktext
+            }
+
+            template = JINJA_ENVIRONMENT.get_template('edit.html')
+            self.response.write(template.render(template_values))
+        else:
+            return self.redirect('/')
+
+
+class CreatePost(webapp2.RequestHandler):
+    
+    def post(self):
+        blog = self.request.get('blog')
+        post = BlogPost(parent=blog.key())
 
 
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createblog', CreateBlog),
+    ('/selectblog', SelectBlog),
+    ('/createpost', CreatePost),
 ], debug=True)
