@@ -14,9 +14,16 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 
 
+def global_parent_key():
+    """Constructs a Datastore key to be used as a parent for all blogs.
+       This allows the app to query a list of all blogs via an
+       ancestor query, which ensures strong consistency"""
+    return ndb.Key('Global_Parent', 'charlesdrews')
+
+
 class Blog(ndb.Model):
     """Models a blog with name and author"""
-    name = ndb.StringProperty(indexed=False)
+    name = ndb.StringProperty()
     author = ndb.UserProperty()
 
 
@@ -41,8 +48,8 @@ class MainPage(webapp2.RequestHandler):
             url = users.create_login_url(self.request.uri)
             url_linktext = 'Login'
         
-        user_blogs = Blog.query(Blog.author == user)
-        all_blogs = Blog.query()
+        user_blogs = Blog.query(Blog.author == user) #.order(Blog.name)
+        all_blogs = Blog.query().order(Blog.name)
         
         template_values = {
             'user': user,
@@ -60,7 +67,7 @@ class CreateBlog(webapp2.RequestHandler):
     
     def post(self):
         if users.get_current_user():
-            blog = Blog()
+            blog = Blog(parent=global_parent_key())
             blog.name = self.request.get('new_blog_name')
             blog.author = users.get_current_user()
             blog.put()
@@ -93,6 +100,8 @@ class EditBlog(webapp2.RequestHandler):
 
             template = JINJA_ENVIRONMENT.get_template('edit.html')
             self.response.write(template.render(template_values))
+            #self.redirect('/editblog')
+# apparently not OK to have redirects after a handler...
         else:
             self.redirect('/')
 
@@ -113,6 +122,7 @@ class CreatePost(webapp2.RequestHandler):
             blog_post.title = self.request.get('title')
             blog_post.body = self.request.get('body')
             blog_post.put()
+            #self.redirect('/blog')
         else:
             self.redirect('/')
 
