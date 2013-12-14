@@ -21,13 +21,12 @@ class Blog(ndb.Model):
 
 
 class BlogPost(ndb.Model):
-    """Models a blog post belonging to a blog
-       and having an author, title, body, and date
-    """
+    """Models a blog post with author, title, body, and date"""
     author = ndb.UserProperty()
     title = ndb.StringProperty(indexed=False)
     body = ndb.StringProperty(indexed=False)
-    date = ndb.DateTimeProperty(auto_now_add=True)
+    create_date = ndb.DateTimeProperty(auto_now_add=True)
+    edit_date = ndb.DateTimeProperty(auto_now_add=True)
 
 
 class MainPage(webapp2.RequestHandler):
@@ -101,8 +100,20 @@ class EditBlog(webapp2.RequestHandler):
 class CreatePost(webapp2.RequestHandler):
     
     def post(self):
-        blog = self.request.get('blog')
-        post = BlogPost(parent=blog.key())
+        if users.get_current_user():
+            blog_key = self.request.get('blog_key')
+            blog = ndb.Key(urlsafe=blog_key).get()
+
+            bp = BlogPost(parent=ndb.Key(urlsafe=blog_key))
+            bp.author = users.get_current_user()
+            bp.title = self.request.get('title')
+            bp.body = self.request.get('body')
+            bp.put()
+        else:
+            self.redirect('/')
+
+    def get(self):
+            self.redirect('/')
 
 
 application = webapp2.WSGIApplication([

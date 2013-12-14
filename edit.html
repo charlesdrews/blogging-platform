@@ -8,8 +8,18 @@
       <h2>Welcome, {{ user.nickname() }}!</h2>
       <p>Please use this form to create a new post for your
          blog "{{ blog.name }}":
-      <br>(add form here)
-    
+      
+      <form action="/createpost" method="post">
+        <input type=hidden name="blog_key" value="{{ blog.key.urlsafe() }}">
+        <input type=hidden name="author" value="{{ user }}">
+        <br>Post Title:<br>
+        <textarea name="title" rows="2" cols="60"></textarea>
+        <br>Post Body:<br>
+        <textarea name="body" rows="20" cols="60"></textarea>
+        <br>
+        <input type="submit" value="Create Post">
+      </form>
+
     {% else %}
       <p>Please login to create blogs and/or blog posts
     {% endif %}
