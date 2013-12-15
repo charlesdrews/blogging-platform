@@ -9,30 +9,21 @@
     <tr>
       <td>
         <h1>{{ blog.name }}</h1>
-        
         <hr>
-        
         <h2>Welcome, {{ user.nickname() }}!</h2>
-        
-        <p>Please use this form to create a new post:</p>
+        <p>Please use this form to upload an image:
       
-        <form action="/createpost/{{ blog.key.id() }}" method="post">
+        <form action="{{ upload_url }}" method="post"
+              enctype="multipart/form-data">
           <input type=hidden name="author" value="{{ user }}">
         
-          <p>Post Title:<br>
-          <textarea name="title" rows="2"></textarea></p>
-        
-          <p>Post Body:<br>
-          <textarea name="body" rows="10"></textarea></p>
-       
-          <p>Tags (separated by commas):<br>
-          <textarea name="tags" rows="2"></textarea></b>
-         
-          <p><input type="submit" value="Create Post"></p>
+          <p><input type="file" name="file"></p> 
+
+          <p><input type="submit" value="Upload"></p>
         </form>
         
-        <p><a href="/blog/{{ blog.key.id() }}">Return to blog view</a></p>
-        
+        <p><a href="blog/{{ blog.key.id() }}">return to blog view</a></p>
+
         <p><a href="/">Return to Charlie's Blogging Service homepage</a></p>
         
         <p><a href="{{ login_url|safe }}">{{ login_text }}</a></p>

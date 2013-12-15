@@ -14,8 +14,7 @@
       <p>Select one of your blogs to add or edit posts:
       <ul> 
       {% for blog in user_blogs %}
-        <li><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
-                {{ blog.name }}</a> 
+        <li><a href="blog/{{ blog.key.id() }}">{{ blog.name }}</a>
       {% endfor %}
       </ul>
 
@@ -34,8 +33,7 @@
     <hr>
     <p>Or select a blog to view:<ul>
     {% for blog in all_blogs %}
-      <li><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
-            {{ blog.name }}</a> 
+      <li><a href="/blog/{{ blog.key.id() }}">{{ blog.name }}</a>
       (author: {{ blog.author }})
     {% endfor %}
     </ul>

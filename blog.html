@@ -9,7 +9,7 @@
   <div class="small">
     <a href="/">Charlie's Blogging Service</a> |
     {% if user %}{{ user.nickname() }} |{% endif %}
-    <a href="{{ login_url }}">{{ login_text }}</a>
+    <a href="{{ login_url|safe }}">{{ login_text }}</a>
   </div>
 
   <table>
@@ -21,9 +21,15 @@
         
         {% if user == blog.author %} 
           <h2>Welcome, {{ user.nickname() }}!</h2>
-          <p>Please <a href="/createpost?blog_url_key={{ blog.key.urlsafe() }}">
-          click here</a> to create a new post for this blog, or use the
+
+          <p>Please
+          <a href="/createpost/{{ blog.key.id() }}">click here</a>
+          to create a new post for this blog, or use the
           "edit post" links below to edit existing posts.</p>
+
+          <p>Please
+          <a href="/upload">click here</a>
+          to upload an image for use in any of your posts.</p>
           
           <hr>
         {% endif %}
@@ -33,7 +39,7 @@
     <tr>
       <td>
         {% if selectedtag %}
-          <p>Posts tagged with <b>{{ selectedtag }}</b>:
+          <p>Posts tagged with <b>{{ selectedtag }}</b>:</p>
         {% endif %}
         
         {% for post in blog_posts %}
@@ -45,21 +51,19 @@
             Edited: {{ post.edit_date.strftime('%Y-%m-%d %H:%M') }}
           </div>
 
-          <p>{{ post.body|safe }}
+          <p>{{ post.body|safe }}</p>
 
           <div class="small">
             Tags: 
             {% for tag in post.tags %}
-               <a href="/blog?tag={{ tag }}&blog_url_key={{ blog.key.urlsafe() }}">
-                  {{ tag }}</a>
+               <a href="/blog/{{ blog.key.id() }}?tag={{ tag }}">{{ tag }}</a>
                {%- if not loop.last %}, {% endif %}
             {% endfor %}
             <br>
-            <a href="/post?post_url_key={{ post.key.urlsafe() }}">
-               view full post</a>
+            <a href="/post/{{ blog.key.id() }}/{{ post.key.id() }}">view full post (permalink)</a>
+
             {% if user == blog.author %}| 
-              <a href="/editpost?post_url_key={{ post.key.urlsafe() }}">
-                 edit post</a>
+              <a href="/editpost/{{ blog.key.id() }}/{{ post.key.id() }}">edit post</a>
             {% endif %}
           </div>
 
@@ -70,15 +74,13 @@
         
         {% if more %}
           <div class="small">
-            <a href="/blog?cursor={{ cursor }}&tag={{ selectedtag}}&blog_url_key={{ blog.key.urlsafe() }}">
-               more posts</a>
+            <a href="/blog/{{ blog.key.id() }}?tag={{ selectedtag}}&cursor={{ cursor }}">more posts</a>
            </div>
         {% endif %} 
          
         {% if selectedtag %}
           <div class="small">
-            <a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
-               Return to blog view (including all tags)</a>
+            <a href="/blog/{{ blog.key.id() }}">return to blog view (including all tags)</a>
           </div>
         {% endif %}
 
@@ -88,13 +90,10 @@
         <br>Tags:
         <div class="small">
         {%- for tag in blogtags -%}
-          <br>
-          <a href="/blog?tag={{ tag }}&blog_url_key={{ blog.key.urlsafe() }}">
-            {{ tag }}</a>
+          <br><a href="/blog/{{ blog.key.id() }}?tag={{ tag }}">{{ tag }}</a>
         {%- endfor -%}
         <br><br>
-        <a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
-           all tags</a>
+        <a href="/blog/{{ blog.key.id() }}">all tags</a>
         </div>
       
       </td>
