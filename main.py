@@ -184,9 +184,14 @@ class CreatePost(webapp2.RequestHandler):
 
         if users.get_current_user() == blog.author:
             # if user is blog's author, show create-post page
+            login_url = users.create_logout_url(self.request.uri)
+            login_text = 'Logout'
+            
             template_values = {
                 'user': users.get_current_user(),
                 'blog': blog,
+                'login_url': login_url,
+                'login_text': login_text,
             }
 
             template = JINJA_ENVIRONMENT.get_template('addpost.html')
@@ -226,10 +231,19 @@ class ViewPost(webapp2.RequestHandler):
         # parse body so links & images are handled correctly
         blog_post.body = parsebody(blog_post.body)
 
+        if users.get_current_user():
+            login_url = users.create_logout_url(self.request.uri)
+            login_text = 'Logout'
+        else:
+            login_url = users.create_login_url(self.request.uri)
+            login_text = 'Login'
+
         template_values = {
             'user': users.get_current_user(),
             'blog': blog,
-            'post': blog_post
+            'post': blog_post,
+            'login_url': login_url,
+            'login_text': login_text,
         }
 
         template = JINJA_ENVIRONMENT.get_template('post.html')
@@ -246,10 +260,15 @@ class EditPost(webapp2.RequestHandler):
         
         if users.get_current_user() == blog_post.author:
             # if user is post's author, show edit-post page
+            login_url = users.create_logout_url(self.request.uri)
+            login_text = 'Logout'
+            
             template_values = {
                 'user': users.get_current_user(),
                 'blog': blog,
-                'post': blog_post
+                'post': blog_post,
+                'login_url': login_url,
+                'login_text': login_text,
             }
 
             template = JINJA_ENVIRONMENT.get_template('editpost.html')
@@ -290,10 +309,15 @@ class ImagesHandler(webapp2.RequestHandler):
             images = Image.query(Image.user == users.get_current_user(),
                         ancestor=global_parent_key())
                        
+            login_url = users.create_logout_url(self.request.uri)
+            login_text = 'Logout'
+
             template_values = {
                 'user': users.get_current_user(),
                 'upload_url': upload_url,
                 'images': images,
+                'login_url': login_url,
+                'login_text': login_text,
             }
 
             template = JINJA_ENVIRONMENT.get_template('images.html')

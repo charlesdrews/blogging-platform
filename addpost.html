@@ -5,6 +5,13 @@
     <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
   </head>
   <body>
+  
+  <div class="small">
+    <a href="/">Charlie's Blogging Service</a> |
+    {% if user %}<a href="/">{{ user.nickname() }}</a> |{% endif %}
+    <a href="{{ login_url|safe }}">{{ login_text }}</a>
+  </div>
+
   <table>
     <tr>
       <td>
@@ -22,8 +29,17 @@
           <p>Post Title:<br>
           <textarea name="title" rows="2"></textarea></p>
         
-          <p>Post Body:<br>
-          <textarea name="body" rows="10"></textarea></p>
+          <p>Post Body:
+          <textarea name="body" rows="10"></textarea>
+          <span class="small">
+            Image URLs (starting with http:// or https:// and ending
+            with .jpg, .png, or .gif) are converted to inline images
+            when the blog post is displayed. Other URLs (starting with
+            http:// or https://) are converted to clickable links when
+            the blog post is displayed. To use an image you uploaded,
+            please copy and paste the image's permalink URL into the
+            body of the post.
+          </span></p>
        
           <p>Tags (separated by commas):<br>
           <textarea name="tags" rows="2"></textarea></b>
@@ -31,11 +47,8 @@
           <p><input type="submit" value="Create Post"></p>
         </form>
         
-        <p><a href="/blog/{{ blog.key.id() }}">Return to blog view</a></p>
+        <p><a href="/blog/{{ blog.key.id() }}">cancel (return to blog view)</a></p>
         
-        <p><a href="/">Return to Charlie's Blogging Service homepage</a></p>
-        
-        <p><a href="{{ login_url|safe }}">{{ login_text }}</a></p>
       </td>
     </tr>
   </table>

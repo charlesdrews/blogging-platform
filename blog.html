@@ -8,7 +8,7 @@
  
   <div class="small">
     <a href="/">Charlie's Blogging Service</a> |
-    {% if user %}{{ user.nickname() }} |{% endif %}
+    {% if user %}<a href="/">{{ user.nickname() }}</a> |{% endif %}
     <a href="{{ login_url|safe }}">{{ login_text }}</a>
   </div>
 

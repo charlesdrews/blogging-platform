@@ -5,11 +5,20 @@
     <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
   </head>
   <body>
+  
+  <div class="small">
+    <a href="/">Charlie's Blogging Service</a> |
+    {% if user %}<a href="/">{{ user.nickname() }}</a> |{% endif %}
+    <a href="{{ login_url|safe }}">{{ login_text }}</a>
+  </div>
+
   <table>
     <tr>
       <td>
         <h1>Charlie's Blogging Service</h1>
-        <br>
+        
+        <hr>
+        
         <h2>Welcome, {{ user.nickname() }}!</h2>
         
         <p>Please use this form to upload a new image:</p>
@@ -32,11 +41,10 @@
         {% endfor %}
         </ul>
 
-        <p>(images shown with reduced size, but stored full size)</p>
+        <p>(images displayed at reduced size, but stored at full size)</p>
 
-        <p><a href="/">Return to Charlie's Blogging Service homepage</a></p>
+        <p><a href="/">home</a></p>
         
-        <p><a href="{{ login_url|safe }}">{{ login_text }}</a></p>
       </td>
     </tr>
   </table>

@@ -5,10 +5,18 @@
     <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
   </head>
   <body>
+  
+  <div class="small">
+    <a href="/">Charlie's Blogging Service</a> |
+    {% if user %}<a href="/">{{ user.nickname() }}</a> |{% endif %}
+    <a href="{{ login_url|safe }}">{{ login_text }}</a>
+  </div>
+ 
   <table>
     <tr><td>
     <h1>Charlie's Blogging Service</h1>
-    <br>
+    
+    <hr>
 
     {% if user %}
       <h2>Welcome, {{ user.nickname() }}!</h2>
@@ -29,13 +37,14 @@
       uploaded images.</p>
 
     {% else %}
-      <p>Please login to create blogs and/or blog posts
+      <p>Please login to create blogs and/or blog posts</p>
     {% endif %}
   
-    <p><a href="{{ login_url|safe }}">{{ login_text }}</a>
-  
     <hr>
-    <p>Or select a blog to view:<ul>
+    
+    <p>Or select a blog to view:
+    
+    <ul>
     {% for blog in all_blogs %}
       <li><a href="/blog/{{ blog.key.id() }}">{{ blog.name }}</a>
       (author: {{ blog.author }})
