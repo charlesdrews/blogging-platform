@@ -1,6 +1,11 @@
 body {
   font-family: Helvetica, sans-serif;
+  font-size: 100%;
 }
+
+h1 { font-size: 250%; }
+h2 { font-size: 150%; }
+.small { font-size: 80%; }
 
 table {
   width: 700px;

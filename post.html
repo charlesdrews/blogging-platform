@@ -22,7 +22,7 @@
         
         <p>Tags: 
         {% for tag in post.tags %}
-          <a href="">{{ tag }}</a>{% if not loop.last %},{% endif %}
+          <a href="">{{ tag }}</a>{% if not loop.last %}, {% endif %}
         {% endfor %} 
         
         {% if user == blog.author %} 
@@ -32,8 +32,11 @@
   
         <hr>
         
-        <p><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">Return to blog view</a> 
+        <p><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
+                Return to blog view</a> 
         <p><a href="/">Return to Charlie's Blogging Service homepage</a> 
+        
+        <p><a href="{{ login_url|safe }}">{{ login_text }}</a>
       
       </td>
     </tr>

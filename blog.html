@@ -5,6 +5,13 @@
     <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
   </head>
   <body>
+ 
+  <div class="small">
+    <a href="/">Charlie's Blogging Service</a> |
+    {% if user %}{{ user.nickname() }} |{% endif %}
+    <a href="{{ login_url }}">{{ login_text }}</a>
+  </div>
+
   <table>
     <tr>
       <td colspan="2">
@@ -14,30 +21,13 @@
         
         {% if user == blog.author %} 
           <h2>Welcome, {{ user.nickname() }}!</h2>
-          <p>Please use this form to create a new post for "{{ blog.name }}",
-             or edit an existing post by using one of the "edit post" links
-             in the blog view below:
-      
-          <form action="/createpost" method="post">
-            <input type=hidden name="blog_url_key" value="{{ blog.key.urlsafe() }}">
-            <input type=hidden name="author" value="{{ user }}">
+          <p>Please <a href="/createpost?blog_url_key={{ blog.key.urlsafe() }}">
+          click here</a> to create a new post for this blog, or use the
+          "edit post" links below to edit existing posts.</p>
           
-            <p>Post Title:<br>
-            <textarea name="title" rows="2"></textarea>
-          
-            <p>Post Body:<br>
-            <textarea name="body" rows="10"></textarea>
-         
-            <p>Tags (separated by commas):<br>
-            <textarea name="tags" rows="2"></textarea>
-           
-            <p><input type="submit" value="Create Post">
-          </form>
-    
           <hr>
-        
-          Use the "edit post" links below to edit an existing post: 
         {% endif %}
+
       </td>
     </tr>
     <tr>
@@ -48,56 +38,65 @@
         
         {% for post in blog_posts %}
           <h2>{{ post.title }}</h2>
-          <h3>By: {{ post.author }}</h3>
 
-          <p>Posted: {{ post.create_date.strftime('%Y-%m-%d %H:%M:%S') }}
-          <br>Edited: {{ post.edit_date.strftime('%Y-%m-%d %H:%M:%S') }}
-          
+          <div class="small">
+            By: {{ post.author }} |
+            Posted: {{ post.create_date.strftime('%Y-%m-%d %H:%M') }} |
+            Edited: {{ post.edit_date.strftime('%Y-%m-%d %H:%M') }}
+          </div>
+
           <p>{{ post.body|safe }}
 
-          <p>Tags: 
-          {% for tag in post.tags %}
-            <a href="/blog?tag={{ tag }}&blog_url_key={{ blog.key.urlsafe() }}">
-                {{ tag }}</a>
-            {% if not loop.last %},{% endif %}
-          {% endfor %} 
+          <div class="small">
+            Tags: 
+            {% for tag in post.tags %}
+               <a href="/blog?tag={{ tag }}&blog_url_key={{ blog.key.urlsafe() }}">
+                  {{ tag }}</a>
+               {%- if not loop.last %}, {% endif %}
+            {% endfor %}
+            <br>
+            <a href="/post?post_url_key={{ post.key.urlsafe() }}">
+               view full post</a>
+            {% if user == blog.author %}| 
+              <a href="/editpost?post_url_key={{ post.key.urlsafe() }}">
+                 edit post</a>
+            {% endif %}
+          </div>
 
-          <p><a href="/post?post_url_key={{ post.key.urlsafe() }}">
-                View full post</a>
-        
-          {% if user == blog.author %} 
-            <p><a href="/editpost?post_url_key={{ post.key.urlsafe() }}">
-                edit post</a>
-          {% endif %}
-
-          <hr>
+          {% if not loop.last %}<hr>{% endif %}
         {% endfor %}
         
-        {# more comes from ndb's fetch_page and indicates whether
-           there are more results to show
-        #}
+        {% if more or selectedtag %}<hr>{% endif %}
+        
         {% if more %}
-          <p><a href="/blog?cursor={{ cursor }}&tag={{ selectedtag}}&blog_url_key={{ blog.key.urlsafe() }}">
-                more posts</a>
+          <div class="small">
+            <a href="/blog?cursor={{ cursor }}&tag={{ selectedtag}}&blog_url_key={{ blog.key.urlsafe() }}">
+               more posts</a>
+           </div>
         {% endif %} 
          
         {% if selectedtag %}
-          <p><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
-                Return to blog view (including all tags)</a>
+          <div class="small">
+            <a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
+               Return to blog view (including all tags)</a>
+          </div>
         {% endif %}
 
-        <p><a href="/">Return to Charlie's Blogging Service homepage</a> 
       </td>
-
       <td class="taglist">
-        <p>Tags:
-        
-        {% for tag in blogtags %}
+      
+        <br>Tags:
+        <div class="small">
+        {%- for tag in blogtags -%}
           <br>
           <a href="/blog?tag={{ tag }}&blog_url_key={{ blog.key.urlsafe() }}">
             {{ tag }}</a>
-        {% endfor %}
-        <br>
+        {%- endfor -%}
+        <br><br>
+        <a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
+           all tags</a>
+        </div>
+      
       </td>
     </tr>
   </table>

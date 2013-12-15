@@ -163,8 +163,28 @@ class ViewBlog(webapp2.RequestHandler):
         
 
 class CreatePost(webapp2.RequestHandler):
-    
+
+    def get(self):
+        # create the create-post page
+        blog_url_key = self.request.get('blog_url_key')
+        blog_key = ndb.Key(urlsafe=blog_url_key)
+        blog = blog_key.get()
+
+        if users.get_current_user() == blog.author:
+            # if user is blog's author, show create-post page
+            template_values = {
+                'user': users.get_current_user(),
+                'blog': blog,
+            }
+
+            template = JINJA_ENVIRONMENT.get_template('addpost.html')
+            self.response.write(template.render(template_values))
+        else:
+            # if user is not blog's author, redirect to standard blog view
+            self.redirect('/blog?blog_url_key='+blog_url_key)
+
     def post(self):
+        # process the actual blog post creation
         blog_url_key = self.request.get('blog_url_key')
         blog_key = ndb.Key(urlsafe=blog_url_key)
         blog = blog_key.get()
@@ -178,17 +198,13 @@ class CreatePost(webapp2.RequestHandler):
             
             taglist = []
             taglist.extend(self.request.get('tags').split(','))
-            blog_post.tags = taglist
+            blog_post.tags = [ x.strip() for x in taglist ]
             blog_post.put()
             # when done, redirect to blog view
             self.redirect('/blog?blog_url_key='+blog_url_key)
         else:
             # if user is not blog's author, redirect w/o creating post
             self.redirect('/blog?blog_url_key='+blog_url_key)
-
-    def get(self):
-            # if a user tries to create a post via url, redirect home
-            self.redirect('/')
 
 
 class ViewPost(webapp2.RequestHandler):
@@ -249,7 +265,7 @@ class EditPost(webapp2.RequestHandler):
 
             taglist = []
             taglist.extend(self.request.get('tags').split(','))
-            blog_post.tags = taglist
+            blog_post.tags = [ x.strip() for x in taglist ]
             blog_post.put()
 
             blog = blog_post.key.parent().get()

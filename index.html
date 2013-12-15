@@ -11,7 +11,7 @@
 
     {% if user %}
       <h2>Welcome, {{ user.nickname() }}!</h2>
-      <p>Select one of your blogs to add or edit a post:
+      <p>Select one of your blogs to add or edit posts:
       <ul> 
       {% for blog in user_blogs %}
         <li><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">
