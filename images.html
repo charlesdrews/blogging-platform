@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/main.css" />
+  </head>
+  <body>
+  <table>
+    <tr>
+      <td>
+        <h1>Charlie's Blogging Service</h1>
+        <br>
+        <h2>Welcome, {{ user.nickname() }}!</h2>
+        
+        <p>Please use this form to upload a new image:</p>
+        
+        <p><form action="{{ upload_url }}" method="post"
+              enctype="multipart/form-data">
+          <input type=hidden name="author" value="{{ user }}">
+          <input type="file" name="image"><br>
+          <input type="submit" value="Upload">
+        </form></p>
+        
+        <hr>
+         
+        <p>Images previously uploaded, with permalinks:</p>
+        
+        <ul> 
+        {% for image in images %}
+          <li><img src="/serve/{{ image.blob_key }}/{{ image.filename }}" align="top">
+              <a href="/serve/{{ image.blob_key }}/{{ image.filename }}">permalink</a>
+        {% endfor %}
+        </ul>
+
+        <p>(images shown with reduced size, but stored full size)</p>
+
+        <p><a href="/">Return to Charlie's Blogging Service homepage</a></p>
+        
+        <p><a href="{{ login_url|safe }}">{{ login_text }}</a></p>
+      </td>
+    </tr>
+  </table>
+  </body>
+</html>
+{% endautoescape %}

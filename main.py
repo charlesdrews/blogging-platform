@@ -12,6 +12,7 @@ import webapp2
 
 from google.appengine.ext import blobstore
 from google.appengine.ext.webapp import blobstore_handlers
+from google.appengine.api import images
 
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -45,8 +46,15 @@ class BlogPost(ndb.Model):
     tags = ndb.StringProperty(repeated=True)
 
 
+class Image(ndb.Model):
+    """Models user-uploaded images"""
+    user = ndb.UserProperty()
+    blob_key = ndb.BlobKeyProperty(required=True)
+    filename = ndb.StringProperty(indexed=False)
+
+
 class MainPage(webapp2.RequestHandler):
-    
+    """Handles requests to the app's root page"""    
     def get(self):
         user = users.get_current_user()
 
@@ -73,7 +81,7 @@ class MainPage(webapp2.RequestHandler):
 
 
 class CreateBlog(webapp2.RequestHandler):
-    
+    """Handles requests to add a new blog to the datastore""" 
     def post(self):
         if users.get_current_user():
             blog = Blog(parent=global_parent_key())
@@ -91,6 +99,8 @@ class CreateBlog(webapp2.RequestHandler):
 
 
 def parsebody(body):
+    """Parses blog post body text for images to display inline
+       and other links to render in HTML"""
     body = re.sub(r'\n', r'<br>', body)
     # first find images and make them inline
     body = re.sub(r'(\bhttps?://\S+(\.jpg|\.png|\.gif)\b)',
@@ -102,7 +112,9 @@ def parsebody(body):
 
 
 class ViewBlog(webapp2.RequestHandler):
-    
+    """Handles requests to view a blog. Passes user and blog info
+       to template which posts certain contents only if the current
+       user is the blog's author, like links to create/edit posts""" 
     def get(self, blog_id):
         blog = Blog.get_by_id(int(blog_id), global_parent_key())
         selectedtag = self.request.get('tag')
@@ -164,7 +176,8 @@ class ViewBlog(webapp2.RequestHandler):
         
 
 class CreatePost(webapp2.RequestHandler):
-
+    """Handles requests to create a new blog post. get() creates
+       page with user input form, and post() processes that input"""
     def get(self, blog_id):
         # create the create-post page
         blog = Blog.get_by_id(int(blog_id), global_parent_key())
@@ -205,7 +218,7 @@ class CreatePost(webapp2.RequestHandler):
 
 
 class ViewPost(webapp2.RequestHandler):
-
+    """Handles requests to view a post via its permalink"""
     def get(self, blog_id, blog_post_id):
         blog = Blog.get_by_id(int(blog_id), global_parent_key())
         blog_post = BlogPost.get_by_id(int(blog_post_id), blog.key)
@@ -224,7 +237,8 @@ class ViewPost(webapp2.RequestHandler):
 
 
 class EditPost(webapp2.RequestHandler):
-
+    """Handles requests to edit posts. get() creates page with
+       user input form, and post() processes that input"""
     def get(self, blog_id, blog_post_id):
         # create the edit-post page
         blog = Blog.get_by_id(int(blog_id), global_parent_key())
@@ -265,15 +279,58 @@ class EditPost(webapp2.RequestHandler):
             self.redirect('/blog/%s' % blog.key.id())
 
 
+class ImagesHandler(webapp2.RequestHandler):
+    """Handles requests to view the page with the upload image form
+       and a list of previously uploaded images w/ permalinks"""
+    def get(self):
+        upload_url = blobstore.create_upload_url('/upload')
+
+        if users.get_current_user():
+            # if user is logged in, show upload image page
+            images = Image.query(Image.user == users.get_current_user(),
+                        ancestor=global_parent_key())
+                       
+            template_values = {
+                'user': users.get_current_user(),
+                'upload_url': upload_url,
+                'images': images,
+            }
+
+            template = JINJA_ENVIRONMENT.get_template('images.html')
+            self.response.write(template.render(template_values))
+        else:
+            # if user is not logged in, redirect to home
+            self.redirect('/')
+
+
 class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
-    #def get(self):
-        # create the upload image page & form
-  
+    """Handles request to upload image to datastore""" 
     def post(self):
         # process the upload
-        upload_files = self.get_uploads('file')  
+        upload_files = self.get_uploads('image')
         blob_info = upload_files[0]
-        self.redirect('/serve/%s' % blob_info.key())
+        image = Image(parent=global_parent_key(),
+                      user = users.get_current_user(),
+                      blob_key = blob_info.key(),
+                      filename = blob_info.filename)
+        image.put()
+        time.sleep(1)
+        self.redirect('/images')
+
+
+class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
+    """Handles requests to view a user-uploaded image"""
+    def get(self, blob_key, filename):
+        # filename not used directly; but it's presence at the
+        # end of the permalink means when a user puts that
+        # permalink in the body of a post, the link-parsing
+        # function will recognize it (from the filename extension)
+        # and wrap it in a <img> tag
+        blob_key = str(urllib.unquote(blob_key))
+        if not blobstore.get(blob_key):
+            self.error(404)
+        else:
+            self.send_blob(blobstore.BlobInfo.get(blob_key))
 
 
 application = webapp2.WSGIApplication([
@@ -283,5 +340,7 @@ application = webapp2.WSGIApplication([
     ('/createpost/(\d+)', CreatePost),
     ('/post/(\d+)/(\d+)', ViewPost),
     ('/editpost/(\d+)/(\d+)', EditPost),
+    ('/images', ImagesHandler),
     ('/upload', UploadHandler),
+    ('/serve/([^/]+)/([^/]+)', ServeHandler),
 ], debug=True)
