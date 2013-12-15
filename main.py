@@ -1,6 +1,7 @@
 import os
 import urllib
 import time
+import re
 
 from google.appengine.api import users
 from google.appengine.ext import ndb
@@ -86,6 +87,17 @@ class CreateBlog(webapp2.RequestHandler):
         self.redirect('/')
 
 
+def parsebody(body):
+    body = re.sub(r'\n', r'<br>', body)
+    # first find images and make them inline
+    body = re.sub(r'(\bhttps?://\S+(\.jpg|\.png|\.gif)\b)',
+                  r'<img src="\1">', body)
+    # then find other links and make them clickable
+    body = re.sub(r'(\b(?<!img src=")https?://\S+\b)',
+                  r'<a href="\1">\1</a>', body)
+    return body
+
+
 class ViewBlog(webapp2.RequestHandler):
     
     def get(self):
@@ -96,25 +108,25 @@ class ViewBlog(webapp2.RequestHandler):
         curs = Cursor(urlsafe=self.request.get('cursor'))
 
         if selectedtag:
-            #blog_posts = BlogPost.query(
-            #    BlogPost.tags == selectedtag,
-            #    ancestor=blog_key).order(-BlogPost.create_date)
+            # if a tag was selected, query only posts w/ that tag
             blog_posts, next_curs, more = BlogPost.query(
                 BlogPost.tags == selectedtag,
                 ancestor=blog_key).order(
                 -BlogPost.create_date).fetch_page(10,
                 start_cursor=curs)
         else:
-            #blog_posts = BlogPost.query(
-            #    ancestor=blog_key).order(-BlogPost.create_date)
+            # else query for all posts from the blog
             blog_posts, next_curs, more = BlogPost.query(
                 ancestor=blog_key).order(
                 -BlogPost.create_date).fetch_page(10,
                 start_cursor=curs)
         
         for blog_post in blog_posts:
+            # trim each post body to 500 characters
             blog_post.body = blog_post.body[0:500]
-        
+            # parse body so links & images are handled correctly
+            blog_post.body = parsebody(blog_post.body)
+
         if users.get_current_user():
             login_url = users.create_logout_url(self.request.uri)
             login_text = 'Logout'
@@ -122,6 +134,16 @@ class ViewBlog(webapp2.RequestHandler):
             login_url = users.create_login_url(self.request.uri)
             login_text = 'Login'
               
+        # query all posts from the blog again to form tags list
+        all_posts = BlogPost.query(ancestor=blog_key)
+        tagswdups = []
+        for p in all_posts:
+            # convert tags from unicode to ascii, add to list
+            tagswdups.extend([item.encode('ascii').strip() for item in p.tags])
+        # remove duplicates and sort in place
+        blogtags = list(set(tagswdups))
+        blogtags.sort()
+        
         template_values = {
             'user': users.get_current_user(),
             'blog': blog,
@@ -130,6 +152,7 @@ class ViewBlog(webapp2.RequestHandler):
             'more': more,
             'login_url': login_url,
             'login_text': login_text,
+            'blogtags': blogtags,
         }
         
         if next_curs:
@@ -152,6 +175,7 @@ class CreatePost(webapp2.RequestHandler):
             blog_post.author = users.get_current_user()
             blog_post.title = self.request.get('title')
             blog_post.body = self.request.get('body')
+            
             taglist = []
             taglist.extend(self.request.get('tags').split(','))
             blog_post.tags = taglist
@@ -175,7 +199,11 @@ class ViewPost(webapp2.RequestHandler):
         blog_post = post_key.get()
         blog = blog_post.key.parent().get()
         
+        # parse body so links & images are handled correctly
+        blog_post.body = parsebody(blog_post.body)
+
         template_values = {
+            'user': users.get_current_user(),
             'blog': blog,
             'post': blog_post
         }
@@ -218,6 +246,7 @@ class EditPost(webapp2.RequestHandler):
             # if user is post's author, continue processing the edit
             blog_post.title = self.request.get('new_title')
             blog_post.body = self.request.get('new_body')
+
             taglist = []
             taglist.extend(self.request.get('tags').split(','))
             blog_post.tags = taglist
@@ -225,7 +254,7 @@ class EditPost(webapp2.RequestHandler):
 
             blog = blog_post.key.parent().get()
             blog_url_key = blog.key.urlsafe()
-            self.redirect('/editblog?blog_url_key='+blog_url_key)
+            self.redirect('/blog?blog_url_key='+blog_url_key)
         else:
             # if user is not post's author, redirect to standard blog view
             self.redirect('/blog?blog_url_key='+blog_url_key)

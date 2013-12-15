@@ -18,12 +18,18 @@
         <p>Posted: {{ post.create_date.strftime('%Y-%m-%d %H:%M:%S') }}
         <br>Edited: {{ post.edit_date.strftime('%Y-%m-%d %H:%M:%S') }}
         
-        <p>{{ post.body }}
+        <p>{{ post.body|safe }}
         
         <p>Tags: 
         {% for tag in post.tags %}
           <a href="">{{ tag }}</a>{% if not loop.last %},{% endif %}
         {% endfor %} 
+        
+        {% if user == blog.author %} 
+          <p><a href="/editpost?post_url_key={{ post.key.urlsafe() }}">
+              edit post</a>
+        {% endif %}
+  
         <hr>
         
         <p><a href="/blog?blog_url_key={{ blog.key.urlsafe() }}">Return to blog view</a> 
