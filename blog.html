@@ -80,9 +80,11 @@
           </div>
         {% endif %}
 
+<!-- comment out the RSS link
         <div class="small">
           <a href="/feed/{{ blog.key.id() }}">RSS</a>
         </div>
+-->
 
       </td>
       <td class="taglist">
@@ -93,8 +95,10 @@
             <br><a href="/blog/{{ blog.key.id() }}?tag={{ tag }}">{{ tag }}</a>
           {%- endfor -%}
           <br><br>
-          <a href="/blog/{{ blog.key.id() }}">all tags</a><br><br><a 
-             href="/feed/{{ blog.key.id() }}">RSS</a>
+          <a href="/blog/{{ blog.key.id() }}">all tags</a><br><br>
+<!-- comment out the RSS link
+          <a href="/feed/{{ blog.key.id() }}">RSS</a>
+-->
         </div>
       
       </td>
