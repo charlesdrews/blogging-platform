@@ -37,7 +37,8 @@
       uploaded images.</p>
 
     {% else %}
-      <p>Please login to create blogs and/or blog posts</p>
+      <p>Please <a href="{{ login_url|safe }}">login</a> to create blogs
+      and/or blog posts</p>
     {% endif %}
   
     <hr>

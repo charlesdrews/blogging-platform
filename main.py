@@ -357,6 +357,21 @@ class ServeHandler(blobstore_handlers.BlobstoreDownloadHandler):
             self.send_blob(blobstore.BlobInfo.get(blob_key))
 
 
+class FeedHandler(webapp2.RequestHandler):
+    """Handles requests for a blog's RSS fees"""
+    def get(self, blog_id):
+        blog = Blog.get_by_id(int(blog_id), global_parent_key())
+        posts = BlogPost.query(ancestor=blog.key)
+        
+        template_values = {
+            'blog': blog,
+            'posts': posts,
+        }
+
+        template = JINJA_ENVIRONMENT.get_template('rss.xml')
+        self.response.write(template.render(template_values))
+
+
 application = webapp2.WSGIApplication([
     ('/', MainPage),
     ('/createblog', CreateBlog),
@@ -367,4 +382,5 @@ application = webapp2.WSGIApplication([
     ('/images', ImagesHandler),
     ('/upload', UploadHandler),
     ('/serve/([^/]+)/([^/]+)', ServeHandler),
+    ('/feed/(\d+)', FeedHandler),
 ], debug=True)
